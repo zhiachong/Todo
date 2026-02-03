@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow - Simple Todo App</title>
+    <title>Family Command Center</title>
     <style>
         * {
             margin: 0;
@@ -13,67 +13,151 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
+            line-height: 1.6;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            width: 100%;
             max-width: 480px;
-            overflow: hidden;
+            margin: 0 auto;
+            padding: 20px;
         }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 30px 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
         .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
+            font-size: 24px;
+            margin-bottom: 5px;
         }
 
-        .header p {
+        .header .date {
             opacity: 0.9;
             font-size: 14px;
+            margin-bottom: 15px;
         }
 
-        .stats {
+        .nav-tabs {
             display: flex;
+            gap: 10px;
             justify-content: center;
-            gap: 30px;
-            margin-top: 20px;
-            font-size: 12px;
         }
 
-        .stat {
+        .nav-tab {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        /* School Status */
+        .school-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-dot.school { background: #27ae60; }
+        .status-dot.noschool { background: #e74c3c; }
+
+        /* Meals */
+        .meal-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .meal-item:last-child { border-bottom: none; }
+
+        .day-label {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        /* Health */
+        .health-streak {
             text-align: center;
         }
 
-        .stat-number {
-            font-size: 24px;
+        .streak-number {
+            font-size: 48px;
             font-weight: 700;
-            display: block;
+            color: #667eea;
         }
 
-        .input-section {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
+        .streak-label {
+            color: #666;
         }
 
+        /* Notes */
+        .quick-note {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Todo Styles */
         .input-wrapper {
             display: flex;
             gap: 10px;
+            margin-bottom: 15px;
         }
 
         #taskInput {
@@ -82,7 +166,6 @@
             border: 2px solid #e0e0e0;
             border-radius: 12px;
             font-size: 16px;
-            transition: border-color 0.2s;
         }
 
         #taskInput:focus {
@@ -90,28 +173,10 @@
             border-color: #667eea;
         }
 
-        #addBtn {
-            padding: 14px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        #addBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
         .filters {
             display: flex;
-            padding: 15px 20px;
             gap: 10px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
         }
 
         .filter-btn {
@@ -123,7 +188,6 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            transition: all 0.2s;
         }
 
         .filter-btn.active {
@@ -133,9 +197,8 @@
         }
 
         .task-list {
-            max-height: 400px;
+            max-height: 300px;
             overflow-y: auto;
-            padding: 10px 20px 20px;
         }
 
         .task {
@@ -146,23 +209,10 @@
             border-radius: 12px;
             margin-bottom: 10px;
             transition: all 0.2s;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
         }
 
         .task:hover {
             background: #f0f0f0;
-            transform: translateX(5px);
         }
 
         .task-checkbox {
@@ -175,12 +225,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
             flex-shrink: 0;
-        }
-
-        .task-checkbox:hover {
-            background: rgba(102, 126, 234, 0.1);
         }
 
         .task-checkbox.checked {
@@ -195,16 +240,15 @@
             font-weight: bold;
         }
 
+        .task.completed .task-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
         .task-text {
             flex: 1;
             font-size: 16px;
             color: #333;
-            transition: all 0.2s;
-        }
-
-        .task.completed .task-text {
-            text-decoration: line-through;
-            color: #999;
         }
 
         .task-delete {
@@ -223,145 +267,204 @@
             opacity: 1;
         }
 
-        .task-delete:hover {
-            background: #ff3344;
+        .todo-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #666;
         }
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
             color: #999;
         }
 
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
+        .section {
+            display: none;
         }
 
-        .empty-state h3 {
-            font-size: 18px;
-            margin-bottom: 8px;
-            color: #666;
-        }
-
-        .footer {
-            padding: 15px 20px;
-            background: #f8f9fa;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-            color: #666;
-        }
-
-        .clear-completed {
-            background: none;
-            border: none;
-            color: #667eea;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .clear-completed:hover {
-            text-decoration: underline;
+        .section.active {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📋 TaskFlow</h1>
-            <p>Stay organized, get things done</p>
-            <div class="stats">
-                <div class="stat">
-                    <span class="stat-number" id="totalCount">0</span>
-                    <span>Total</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number" id="activeCount">0</span>
-                    <span>Active</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number" id="completedCount">0</span>
-                    <span>Done</span>
-                </div>
+            <h1>📋 Family Command Center</h1>
+            <div class="date" id="todayDate">Loading...</div>
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showSection('family')">Family</button>
+                <button class="nav-tab" onclick="showSection('tasks')">Tasks</button>
             </div>
         </div>
 
-        <div class="input-section">
-            <div class="input-wrapper">
-                <input type="text" id="taskInput" placeholder="What needs to be done?">
-                <button id="addBtn">Add</button>
+        <!-- Family Section -->
+        <div id="family-section" class="section active">
+            <div class="card">
+                <h2>🏫 School Status</h2>
+                <div class="school-status" id="schoolStatus">
+                    <div class="status-dot school"></div>
+                    <span>Aiden has school today</span>
+                </div>
+                <div style="margin-top: 12px; font-size: 14px; color: #666;" id="nextEvent">
+                    Loading upcoming events...
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🍽️ This Week's Meals</h2>
+                <div id="mealPlan">
+                    <div class="meal-item">
+                        <span class="day-label">Monday</span>
+                        <span>Korean Beef Bowl</span>
+                    </div>
+                    <div class="meal-item">
+                        <span class="day-label">Tuesday</span>
+                        <span>Miso Glazed Salmon</span>
+                    </div>
+                    <div class="meal-item">
+                        <span class="day-label">Wednesday</span>
+                        <span>Chicken Teriyaki</span>
+                    </div>
+                    <div class="meal-item">
+                        <span class="day-label">Thursday</span>
+                        <span>Mapo Tofu</span>
+                    </div>
+                    <div class="meal-item">
+                        <span class="day-label">Friday</span>
+                        <span>Pasta Bolognese</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>💪 Health Streak</h2>
+                <div class="health-streak">
+                    <div class="streak-number" id="streakNumber">0</div>
+                    <div class="streak-label">days of movement</div>
+                </div>
+                <button class="btn" onclick="logWorkout()">Log Today's Movement</button>
+            </div>
+
+            <div class="card">
+                <h2>📝 Quick Note</h2>
+                <textarea class="quick-note" id="quickNote" placeholder="What's on your mind?"></textarea>
+                <button class="btn" onclick="saveNote()">Save Note</button>
             </div>
         </div>
 
-        <div class="filters">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="active">Active</button>
-            <button class="filter-btn" data-filter="completed">Completed</button>
-        </div>
+        <!-- Tasks Section -->
+        <div id="tasks-section" class="section">
+            <div class="card">
+                <h2>📝 Tasks</h2>
+                
+                <div class="input-wrapper">
+                    <input type="text" id="taskInput" placeholder="What needs to be done?">
+                    <button class="btn" style="width: auto; margin-top: 0;" onclick="addTask()">Add</button>
+                </div>
 
-        <div class="task-list" id="taskList">
-            <div class="empty-state">
-                <div class="empty-state-icon">📝</div>
-                <h3>No tasks yet</h3>
-                <p>Add a task above to get started</p>
+                <div class="filters">
+                    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+                    <button class="filter-btn" data-filter="active" onclick="setFilter('active')">Active</button>
+                    <button class="filter-btn" data-filter="completed" onclick="setFilter('completed')">Done</button>
+                </div>
+
+                <div class="task-list" id="taskList">
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                        <div style="font-size: 18px; color: #666;">No tasks yet</div>
+                        <p>Add a task above</p>
+                    </div>
+                </div>
+
+                <div class="todo-stats">
+                    <span id="itemsLeft">0 items left</span>
+                    <span style="cursor: pointer; color: #667eea;" onclick="clearCompleted()">Clear completed</span>
+                </div>
             </div>
-        </div>
-
-        <div class="footer">
-            <span id="itemsLeft">0 items left</span>
-            <button class="clear-completed" id="clearCompleted">Clear completed</button>
         </div>
     </div>
 
     <script>
-        // Task Manager
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        let currentFilter = 'all';
+        // Navigation
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById(section + '-section').classList.add('active');
+            event.target.classList.add('active');
+        }
 
-        const taskInput = document.getElementById('taskInput');
-        const addBtn = document.getElementById('addBtn');
-        const taskList = document.getElementById('taskList');
-        const totalCount = document.getElementById('totalCount');
-        const activeCount = document.getElementById('activeCount');
-        const completedCount = document.getElementById('completedCount');
-        const itemsLeft = document.getElementById('itemsLeft');
-        const clearCompleted = document.getElementById('clearCompleted');
-        const filterBtns = document.querySelectorAll('.filter-btn');
+        // Date
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('todayDate').textContent = today.toLocaleDateString('en-US', options);
+
+        // School Status
+        const noSchoolDates = [
+            '2026-02-14', '2026-02-15', '2026-02-16', '2026-02-17',
+            '2026-02-23',
+        ];
+        
+        const todayStr = today.toISOString().split('T')[0];
+        const isNoSchool = noSchoolDates.includes(todayStr) || today.getDay() === 0 || today.getDay() === 6;
+        
+        if (isNoSchool) {
+            document.getElementById('schoolStatus').innerHTML = 
+                '<div class="status-dot noschool"></div><span>No school today</span>';
+        }
+
+        const nextEventDate = new Date('2026-02-14');
+        const daysUntil = Math.ceil((nextEventDate - today) / (1000 * 60 * 60 * 24));
+        document.getElementById('nextEvent').textContent = `Next: Presidents' Day Break in ${daysUntil} days`;
+
+        // Health Streak
+        let streak = parseInt(localStorage.getItem('healthStreak') || '0');
+        document.getElementById('streakNumber').textContent = streak;
+
+        function logWorkout() {
+            streak++;
+            localStorage.setItem('healthStreak', streak);
+            document.getElementById('streakNumber').textContent = streak;
+            alert('Great job! Streak updated.');
+        }
+
+        // Notes
+        function saveNote() {
+            const note = document.getElementById('quickNote').value;
+            if (note.trim()) {
+                const notes = JSON.parse(localStorage.getItem('quickNotes') || '[]');
+                notes.push({ text: note, date: new Date().toISOString() });
+                localStorage.setItem('quickNotes', JSON.stringify(notes));
+                document.getElementById('quickNote').value = '';
+                alert('Note saved!');
+            }
+        }
+
+        // Tasks
+        let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        let currentFilter = 'all';
 
         function saveTasks() {
             localStorage.setItem('tasks', JSON.stringify(tasks));
-            updateStats();
             render();
         }
 
-        function updateStats() {
-            const total = tasks.length;
-            const completed = tasks.filter(t => t.completed).length;
-            const active = total - completed;
-
-            totalCount.textContent = total;
-            activeCount.textContent = active;
-            completedCount.textContent = completed;
-            itemsLeft.textContent = `${active} item${active !== 1 ? 's' : ''} left`;
-        }
-
-        function createTask(text) {
-            return {
-                id: Date.now(),
-                text: text,
-                completed: false,
-                createdAt: new Date().toISOString()
-            };
-        }
-
         function addTask() {
-            const text = taskInput.value.trim();
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
             if (!text) return;
 
-            tasks.push(createTask(text));
-            taskInput.value = '';
+            tasks.push({
+                id: Date.now(),
+                text: text,
+                completed: false
+            });
+            input.value = '';
             saveTasks();
         }
 
@@ -378,75 +481,50 @@
             saveTasks();
         }
 
-        function clearCompletedTasks() {
+        function clearCompleted() {
             tasks = tasks.filter(t => !t.completed);
             saveTasks();
         }
 
-        function render() {
-            let filteredTasks = tasks;
-            if (currentFilter === 'active') {
-                filteredTasks = tasks.filter(t => !t.completed);
-            } else if (currentFilter === 'completed') {
-                filteredTasks = tasks.filter(t => t.completed);
-            }
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            render();
+        }
 
-            if (filteredTasks.length === 0) {
-                const emptyMessage = currentFilter === 'completed' 
-                    ? 'No completed tasks yet' 
-                    : currentFilter === 'active' 
-                        ? 'No active tasks' 
-                        : 'No tasks yet';
-                const emptySubtext = currentFilter === 'all' ? 'Add a task above to get started' : '';
-                
-                taskList.innerHTML = `
+        function render() {
+            let filtered = tasks;
+            if (currentFilter === 'active') filtered = tasks.filter(t => !t.completed);
+            if (currentFilter === 'completed') filtered = tasks.filter(t => t.completed);
+
+            const activeCount = tasks.filter(t => !t.completed).length;
+            document.getElementById('itemsLeft').textContent = `${activeCount} item${activeCount !== 1 ? 's' : ''} left`;
+
+            const list = document.getElementById('taskList');
+            
+            if (filtered.length === 0) {
+                list.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
-                        <h3>${emptyMessage}</h3>
-                        <p>${emptySubtext}</p>
-                    </div>
-                `;
+                        <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                        <div style="font-size: 18px; color: #666;">${currentFilter === 'completed' ? 'No completed tasks' : 'No tasks yet'}</div>
+                    </div>`;
                 return;
             }
 
-            taskList.innerHTML = filteredTasks.map(task => `
-                <div class="task ${task.completed ? 'completed' : ''}" data-id="${task.id}">
-                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="window.toggleTask(${task.id})"></div>
-                    <span class="task-text">${escapeHtml(task.text)}</span>
-                    <button class="task-delete" onclick="window.deleteTask(${task.id})">Delete</button>
+            list.innerHTML = filtered.map(task => `
+                <div class="task ${task.completed ? 'completed' : ''}">
+                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+                    <span class="task-text">${task.text}</span>
+                    <button class="task-delete" onclick="deleteTask(${task.id})">Delete</button>
                 </div>
             `).join('');
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Event listeners
-        addBtn.addEventListener('click', addTask);
-        taskInput.addEventListener('keypress', (e) => {
+        document.getElementById('taskInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addTask();
         });
 
-        clearCompleted.addEventListener('click', clearCompletedTasks);
-
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.dataset.filter;
-                render();
-            });
-        });
-
-        // Expose functions globally for inline onclick
-        window.toggleTask = toggleTask;
-        window.deleteTask = deleteTask;
-
-        // Initial render
-        updateStats();
         render();
     </script>
 </body>
