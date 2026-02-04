@@ -369,6 +369,26 @@
             </div>
 
             <div class="card">
+                <h2>↩️ Amazon Returns & Refunds</h2>
+                <div id="returnsStatus">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <div class="status-dot" style="background: #95a5a6;"></div>
+                        <span>Checking returns...</span>
+                    </div>
+                </div>
+                <div id="returnsList" style="font-size: 14px;"></div>
+                <div style="margin-top: 12px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 8px;">
+                        <span>Total Refunded: <strong id="totalRefunded">$0</strong></span>
+                        <span>Reversed: <strong id="totalReversed" style="color: #e74c3c;">$0</strong></span>
+                    </div>
+                    <div id="provisionalWarning" style="display: none; background: #fff3cd; padding: 10px; border-radius: 6px; font-size: 12px; color: #856404; margin-top: 8px;">
+                        ⚠️ <span id="provisionalCount">0</span> provisional refund(s) - may still be reversed
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
                 <h2>📝 Quick Note</h2>
                 <textarea class="quick-note" id="quickNote" placeholder="What's on your mind?"></textarea>
                 <button class="btn" onclick="saveNote()">Save Note</button>
@@ -690,6 +710,144 @@
         
         // Auto-refresh every 60 seconds
         setInterval(loadAmazonPackages, 60000);
+
+        // Amazon Returns Integration
+        async function loadAmazonReturns() {
+            try {
+                const [statsRes, activeRes, provisionalRes, reversedRes] = await Promise.all([
+                    fetch(AMAZON_API + '/api/stats'),
+                    fetch(AMAZON_API + '/api/returns/active'),
+                    fetch(AMAZON_API + '/api/returns/provisional'),
+                    fetch(AMAZON_API + '/api/returns/reversed')
+                ]);
+                
+                if (!statsRes.ok) throw new Error('Tracker not running');
+                
+                const stats = await statsRes.json();
+                const active = await activeRes.json();
+                const provisional = await provisionalRes.json();
+                const reversed = await reversedRes.json();
+                
+                updateReturnsUI({
+                    return_stats: stats.return_stats || {},
+                    active: active.returns || [],
+                    provisional: provisional.returns || [],
+                    reversed: reversed.returns || []
+                });
+            } catch (e) {
+                document.getElementById('returnsStatus').innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="status-dot" style="background: #95a5a6;"></div>
+                        <span>Tracker offline</span>
+                    </div>
+                `;
+                document.getElementById('returnsList').innerHTML = '';
+            }
+        }
+
+        function updateReturnsUI(data) {
+            const stats = data.return_stats || {};
+            const active = data.active || [];
+            const provisional = data.provisional || [];
+            const reversed = data.reversed || [];
+            
+            // Update totals
+            document.getElementById('totalRefunded').textContent = '$' + (stats.total_refunded || 0).toFixed(0);
+            document.getElementById('totalReversed').textContent = '$' + (stats.total_reversed || 0).toFixed(0);
+            
+            // Show provisional warning if applicable
+            const provCount = provisional.length;
+            const provWarning = document.getElementById('provisionalWarning');
+            if (provCount > 0) {
+                provWarning.style.display = 'block';
+                document.getElementById('provisionalCount').textContent = provCount;
+            } else {
+                provWarning.style.display = 'none';
+            }
+            
+            let html = '';
+            
+            // Show reversed refunds (most important - money was taken back!)
+            if (reversed.length > 0) {
+                html += `<div style="background: #f8d7da; padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #dc3545;">`;
+                html += `<strong style="color: #721c24;">⚠️ Reversed Refunds (${reversed.length})</strong><br>`;
+                html += `<span style="font-size: 12px; color: #856404;">Amazon took back these refunds</span><br>`;
+                reversed.slice(0, 2).forEach(ret => {
+                    const item = ret.item_name || 'Item';
+                    const amount = ret.refund_amount ? `$${ret.refund_amount.toFixed(2)}` : '';
+                    const reason = ret.reversal_reason ? ` - ${ret.reversal_reason}` : '';
+                    html += `<span style="font-size: 13px;">• ${item.substring(0, 30)}${item.length > 30 ? '...' : ''} ${amount}${reason}</span><br>`;
+                });
+                if (reversed.length > 2) {
+                    html += `<span style="font-size: 12px; color: #721c24;">+${reversed.length - 2} more reversed</span>`;
+                }
+                html += `</div>`;
+            }
+            
+            // Show provisional refunds (watch these - may be reversed)
+            if (provisional.length > 0) {
+                html += `<div style="background: #fff3cd; padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #ffc107;">`;
+                html += `<strong style="color: #856404;">⏳ Provisional Refunds (${provisional.length})</strong><br>`;
+                html += `<span style="font-size: 12px; color: #856404;">Within 30 days - may still be reversed</span><br>`;
+                provisional.slice(0, 2).forEach(ret => {
+                    const item = ret.item_name || 'Item';
+                    const amount = ret.refund_amount ? `$${ret.refund_amount.toFixed(2)}` : '';
+                    html += `<span style="font-size: 13px;">• ${item.substring(0, 30)}${item.length > 30 ? '...' : ''} ${amount}</span><br>`;
+                });
+                if (provisional.length > 2) {
+                    html += `<span style="font-size: 12px; color: #856404;">+${provisional.length - 2} more provisional</span>`;
+                }
+                html += `</div>`;
+            }
+            
+            // Show active returns
+            if (active.length > 0) {
+                const nonProvisional = active.filter(r => !provisional.find(p => p.return_id === r.return_id));
+                if (nonProvisional.length > 0) {
+                    html += `<div style="margin-bottom: 12px;">`;
+                    html += `<strong style="color: #0c5460;">🔄 Active Returns (${nonProvisional.length})</strong><br>`;
+                    nonProvisional.slice(0, 2).forEach(ret => {
+                        const item = ret.item_name || 'Item';
+                        const status = ret.return_status ? `(${ret.return_status})` : '';
+                        html += `<span style="font-size: 13px; color: #666;">• ${item.substring(0, 30)}${item.length > 30 ? '...' : ''} ${status}</span><br>`;
+                    });
+                    if (nonProvisional.length > 2) {
+                        html += `<span style="font-size: 12px; color: #888;">+${nonProvisional.length - 2} more</span>`;
+                    }
+                    html += `</div>`;
+                }
+            }
+            
+            document.getElementById('returnsList').innerHTML = html || '<p style="color: #666;">No active returns</p>';
+            
+            // Status dot
+            let statusColor = '#28a745';
+            let statusText = 'All returns complete';
+            
+            if (reversed.length > 0) {
+                statusColor = '#dc3545';
+                statusText = `${reversed.length} refund(s) reversed!`;
+            } else if (provisional.length > 0) {
+                statusColor = '#ffc107';
+                statusText = `${provisional.length} provisional refund(s)`;
+            } else if (active.length > 0) {
+                statusColor = '#17a2b8';
+                statusText = `${active.length} return(s) in progress`;
+            }
+            
+            document.getElementById('returnsStatus').innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="status-dot" style="background: ${statusColor};"></div>
+                    <span>${statusText}</span>
+                </div>
+            `;
+        }
+
+        // Load returns on page load
+        loadAmazonReturns();
+        
+        // Auto-refresh returns every 60 seconds
+        setInterval(loadAmazonReturns, 60000);
     </script>
 </body>
 </html>
