@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Command Center</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .header .date {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        .school-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .status-dot.school { background: #27ae60; }
+        .status-dot.noschool { background: #e74c3c; }
+        .meal-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        .meal-item:last-child { border-bottom: none; }
+        .day-label {
+            font-weight: 600;
+            color: #667eea;
+        }
+        .quick-note {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 80px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .health-streak {
+            text-align: center;
+        }
+        .streak-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .streak-label {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Family Command Center</h1>
+            <div class="date" id="todayDate">Loading...</div>
+        </div>
+
+        <div class="card">
+            <h2>🏫 School Status</h2>
+            <div class="school-status" id="schoolStatus">
+                <div class="status-dot school"></div>
+                <span>Aiden has school today</span>
+            </div>
+            <div style="margin-top: 12px; font-size: 14px; color: #666;" id="nextEvent">
+                Loading upcoming events...
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🍽️ This Week's Meals</h2>
+            <div id="mealPlan">
+                <div class="meal-item">
+                    <span class="day-label">Monday</span>
+                    <span>Korean Beef Bowl</span>
+                </div>
+                <div class="meal-item">
+                    <span class="day-label">Tuesday</span>
+                    <span>Miso Glazed Salmon</span>
+                </div>
+                <div class="meal-item">
+                    <span class="day-label">Wednesday</span>
+                    <span>Chicken Teriyaki</span>
+                </div>
+                <div class="meal-item">
+                    <span class="day-label">Thursday</span>
+                    <span>Mapo Tofu</span>
+                </div>
+                <div class="meal-item">
+                    <span class="day-label">Friday</span>
+                    <span>Pasta Bolognese</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>💪 Health Streak</h2>
+            <div class="health-streak">
+                <div class="streak-number" id="streakNumber">0</div>
+                <div class="streak-label">days of movement</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📦 Amazon Deliveries</h2>
+            <div id="amazonStatus">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <div class="status-dot" style="background: #f39c12;"></div>
+                    <span>Loading packages...</span>
+                </div>
+            </div>
+            <div id="packageList" style="font-size: 14px;"></div>
+            <button class="btn" onclick="window.open('http://' + window.location.hostname + ':8080', '_blank')" style="margin-top: 12px; font-size: 14px;">View Full Dashboard</button>
+        </div>
+
+        <div class="card">
+            <h2>📝 Quick Note</h2>
+            <textarea class="quick-note" id="quickNote" placeholder="What's on your mind?"></textarea>
+            <button class="btn" onclick="saveNote()">Save Note</button>
+        </div>
+    </div>
+
+    <script>
+        // Set today's date
+        const today = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('todayDate').textContent = today.toLocaleDateString('en-US', options);
+
+        // School status logic (simplified)
+        const noSchoolDates = [
+            '2026-02-14', '2026-02-15', '2026-02-16', '2026-02-17', // Presidents' Day
+            '2026-02-23', // Faculty in-service
+        ];
+        
+        const todayStr = today.toISOString().split('T')[0];
+        const isNoSchool = noSchoolDates.includes(todayStr) || today.getDay() === 0 || today.getDay() === 6;
+        
+        const schoolStatus = document.getElementById('schoolStatus');
+        if (isNoSchool) {
+            schoolStatus.innerHTML = '<div class="status-dot noschool"></div><span>No school today</span>';
+        }
+
+        // Next event
+        const nextEvent = document.getElementById('nextEvent');
+        const nextEventDate = new Date('2026-02-14');
+        const daysUntil = Math.ceil((nextEventDate - today) / (1000 * 60 * 60 * 24));
+        nextEvent.textContent = `Next: Presidents' Day Break in ${daysUntil} days`;
+
+        // Load streak from localStorage
+        const streak = localStorage.getItem('healthStreak') || '0';
+        document.getElementById('streakNumber').textContent = streak;
+
+        // Amazon Tracker Integration
+        async function loadAmazonPackages() {
+            try {
+                // Try to fetch from Amazon tracker API
+                const response = await fetch('http://localhost:8080/api/dashboard');
+                if (!response.ok) throw new Error('Tracker not running');
+                
+                const data = await response.json();
+                updateAmazonUI(data);
+            } catch (e) {
+                // Fallback: show link to start tracker
+                document.getElementById('amazonStatus').innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="status-dot" style="background: #95a5a6;"></div>
+                        <span>Tracker offline</span>
+                    </div>
+                    <p style="font-size: 13px; color: #666; margin-top: 8px;">
+                        Run: <code>python src/cli.py serve --port 8080</code>
+                    </p>
+                `;
+            }
+        }
+
+        function updateAmazonUI(data) {
+            const arrivingToday = data.packages?.arriving_today || [];
+            const pending = data.packages?.pending || [];
+            const delivered = data.packages?.recent_deliveries || [];
+            
+            let html = '';
+            
+            if (arrivingToday.length > 0) {
+                html += `<div style="background: #d4edda; padding: 10px; border-radius: 8px; margin-bottom: 10px;">`;
+                html += `<strong style="color: #155724;">🚚 Arriving Today (${arrivingToday.length})</strong><br>`;
+                arrivingToday.slice(0, 2).forEach(pkg => {
+                    html += `<span style="font-size: 13px;">• ${pkg.subject?.substring(0, 40) || 'Package'}...</span><br>`;
+                });
+                html += `</div>`;
+            }
+            
+            if (pending.length > 0) {
+                html += `<div style="margin-bottom: 10px;">`;
+                html += `<strong>In Transit (${pending.length})</strong><br>`;
+                pending.slice(0, 2).forEach(pkg => {
+                    html += `<span style="font-size: 13px; color: #666;">• ${pkg.subject?.substring(0, 35) || 'Order'}...</span><br>`;
+                });
+                html += `</div>`;
+            }
+            
+            if (delivered.length > 0) {
+                html += `<div style="color: #27ae60;">`;
+                html += `<strong>✓ Recently Delivered (${delivered.length})</strong>`;
+                html += `</div>`;
+            }
+            
+            document.getElementById('packageList').innerHTML = html || '<p style="color: #666;">No active packages</p>';
+            
+            // Update status dot
+            const statusColor = arrivingToday.length > 0 ? '#f39c12' : pending.length > 0 ? '#3498db' : '#95a5a6';
+            const statusText = arrivingToday.length > 0 ? `${arrivingToday.length} arriving today` : pending.length > 0 ? `${pending.length} in transit` : 'No active packages';
+            
+            document.getElementById('amazonStatus').innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="status-dot" style="background: ${statusColor};"></div>
+                    <span>${statusText}</span>
+                </div>
+            `;
+        }
+
+        // Load Amazon packages on page load
+        loadAmazonPackages();
+
+        // Save note function
+        function saveNote() {
+            const note = document.getElementById('quickNote').value;
+            if (note.trim()) {
+                const notes = JSON.parse(localStorage.getItem('quickNotes') || '[]');
+                notes.push({
+                    text: note,
+                    date: new Date().toISOString()
+                });
+                localStorage.setItem('quickNotes', JSON.stringify(notes));
+                document.getElementById('quickNote').value = '';
+                alert('Note saved!');
+            }
+        }
+    </script>
+</body>
+</html>
