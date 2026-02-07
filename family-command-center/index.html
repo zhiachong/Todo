@@ -181,6 +181,58 @@
             </div>
         </div>
 
+        <!-- Todos Section -->
+        <div class="card">
+            <h2>✅ To-Do List</h2>
+            
+            <!-- Groceries -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-weight: 600; color: #27ae60; margin-bottom: 8px;">🛒 Groceries</div>
+                <div id="todos-groceries" class="todo-list"></div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <input type="text" id="input-groceries" placeholder="Add item..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <button onclick="addTodo('groceries')" style="padding: 8px 16px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer;">Add</button>
+                </div>
+            </div>
+            
+            <!-- Amazon Returns -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-weight: 600; color: #e74c3c; margin-bottom: 8px;">📦 Amazon Returns</div>
+                <div id="todos-returns" class="todo-list"></div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <input type="text" id="input-returns" placeholder="Add return item..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <button onclick="addTodo('returns')" style="padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer;">Add</button>
+                </div>
+            </div>
+            
+            <!-- General Tasks -->
+            <div>
+                <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">📋 General</div>
+                <div id="todos-general" class="todo-list"></div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <input type="text" id="input-general" placeholder="Add task..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <button onclick="addTodo('general')" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div class="card">
+            <h2>💬 Notes for Each Other</h2>
+            <div id="notes-list" style="margin-bottom: 16px; max-height: 300px; overflow-y: auto;"></div>
+            
+            <div style="border-top: 1px solid #eee; padding-top: 16px;">
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <select id="note-author" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                        <option value="Zhia">From: Zhia</option>
+                        <option value="Aimee">From: Aimee</option>
+                    </select>
+                </div>
+                <textarea id="note-text" placeholder="Leave a note..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; min-height: 60px; resize: vertical; margin-bottom: 8px;"></textarea>
+                <button class="btn" onclick="addNote()">Send Note</button>
+            </div>
+        </div>
+
         <div class="card">
             <h2>🍽️ Next Week's Meals (Feb 10-14)</h2>
             <div id="mealPlan">
@@ -293,58 +345,6 @@
                         <div>SCDS School Visit — 9:00 AM</div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Todos Section -->
-        <div class="card">
-            <h2>✅ To-Do List</h2>
-            
-            <!-- Groceries -->
-            <div style="margin-bottom: 16px;">
-                <div style="font-weight: 600; color: #27ae60; margin-bottom: 8px;">🛒 Groceries</div>
-                <div id="todos-groceries" class="todo-list"></div>
-                <div style="display: flex; gap: 8px; margin-top: 8px;">
-                    <input type="text" id="input-groceries" placeholder="Add item..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-                    <button onclick="addTodo('groceries')" style="padding: 8px 16px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer;">Add</button>
-                </div>
-            </div>
-            
-            <!-- Amazon Returns -->
-            <div style="margin-bottom: 16px;">
-                <div style="font-weight: 600; color: #e74c3c; margin-bottom: 8px;">📦 Amazon Returns</div>
-                <div id="todos-returns" class="todo-list"></div>
-                <div style="display: flex; gap: 8px; margin-top: 8px;">
-                    <input type="text" id="input-returns" placeholder="Add return item..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-                    <button onclick="addTodo('returns')" style="padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer;">Add</button>
-                </div>
-            </div>
-            
-            <!-- General Tasks -->
-            <div>
-                <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">📋 General</div>
-                <div id="todos-general" class="todo-list"></div>
-                <div style="display: flex; gap: 8px; margin-top: 8px;">
-                    <input type="text" id="input-general" placeholder="Add task..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-                    <button onclick="addTodo('general')" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">Add</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Notes Section -->
-        <div class="card">
-            <h2>💬 Notes for Each Other</h2>
-            <div id="notes-list" style="margin-bottom: 16px; max-height: 300px; overflow-y: auto;"></div>
-            
-            <div style="border-top: 1px solid #eee; padding-top: 16px;">
-                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                    <select id="note-author" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-                        <option value="Zhia">From: Zhia</option>
-                        <option value="Aimee">From: Aimee</option>
-                    </select>
-                </div>
-                <textarea id="note-text" placeholder="Leave a note..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; min-height: 60px; resize: vertical; margin-bottom: 8px;"></textarea>
-                <button class="btn" onclick="addNote()">Send Note</button>
             </div>
         </div>
     </div>
