@@ -118,27 +118,78 @@
         </div>
 
         <div class="card">
-            <h2>🍽️ This Week's Meals</h2>
+            <h2>🍽️ Next Week's Meals (Feb 10-14)</h2>
             <div id="mealPlan">
-                <div class="meal-item">
-                    <span class="day-label">Monday</span>
-                    <span>Korean Beef Bowl</span>
+                <div class="meal-item" onclick="toggleRecipe('mon')" style="cursor: pointer;">
+                    <div>
+                        <span class="day-label">Monday 🐟</span>
+                        <div style="font-size: 12px; color: #666;">Lunch: Leftover Korean Beef | Dinner: Teriyaki Salmon</div>
+                    </div>
                 </div>
-                <div class="meal-item">
-                    <span class="day-label">Tuesday</span>
-                    <span>Miso Glazed Salmon</span>
+                <div id="recipe-mon" class="recipe" style="display: none; padding: 10px; background: #f8f9fa; border-radius: 8px; margin: 5px 0; font-size: 13px;">
+                    <strong>Teriyaki Salmon:</strong><br>
+                    1. Marinate salmon in teriyaki sauce (30 min)<br>
+                    2. Pan sear 4 min each side<br>
+                    3. Serve with rice + steamed broccoli<br>
+                    <em>🍯 Tip: Use low-sodium sauce for kids</em>
                 </div>
-                <div class="meal-item">
-                    <span class="day-label">Wednesday</span>
-                    <span>Chicken Teriyaki</span>
+
+                <div class="meal-item" onclick="toggleRecipe('tue')" style="cursor: pointer;">
+                    <div>
+                        <span class="day-label">Tuesday 🍗</span>
+                        <div style="font-size: 12px; color: #666;">Lunch: Katsu Sandwiches | Dinner: Chicken Katsu Curry</div>
+                    </div>
                 </div>
-                <div class="meal-item">
-                    <span class="day-label">Thursday</span>
-                    <span>Mapo Tofu</span>
+                <div id="recipe-tue" class="recipe" style="display: none; padding: 10px; background: #f8f9fa; border-radius: 8px; margin: 5px 0; font-size: 13px;">
+                    <strong>Chicken Katsu Curry:</strong><br>
+                    1. Pound chicken thin, salt & pepper<br>
+                    2. Dredge: flour → egg → panko<br>
+                    3. Fry 3-4 min each side until golden<br>
+                    4. Serve with SB Golden Curry + rice<br>
+                    <em>💡 Make extra for sandwiches!</em>
                 </div>
-                <div class="meal-item">
-                    <span class="day-label">Friday</span>
-                    <span>Pasta Bolognese</span>
+
+                <div class="meal-item" onclick="toggleRecipe('wed')" style="cursor: pointer;">
+                    <div>
+                        <span class="day-label">Wednesday 🍤</span>
+                        <div style="font-size: 12px; color: #666;">Lunch: Shrimp Fried Rice | Dinner: Miso Soup + Gyoza</div>
+                    </div>
+                </div>
+                <div id="recipe-wed" class="recipe" style="display: none; padding: 10px; background: #f8f9fa; border-radius: 8px; margin: 5px 0; font-size: 13px;">
+                    <strong>Miso Soup + Gyoza:</strong><br>
+                    • Miso: Dashi + miso paste + tofu + wakame<br>
+                    • Gyoza: Pan fry 3 min, add water, cover 3 min<br>
+                    • Serve with edamame<br>
+                    <em>🥟 Store-bought gyoza is fine!</em>
+                </div>
+
+                <div class="meal-item" onclick="toggleRecipe('thu')" style="cursor: pointer;">
+                    <div>
+                        <span class="day-label">Thursday 🍝</span>
+                        <div style="font-size: 12px; color: #666;">Lunch: Udon Noodles | Dinner: Spaghetti & Meatballs</div>
+                    </div>
+                </div>
+                <div id="recipe-thu" class="recipe" style="display: none; padding: 10px; background: #f8f9fa; border-radius: 8px; margin: 5px 0; font-size: 13px;">
+                    <strong>Spaghetti & Meatballs:</strong><br>
+                    1. Mix: ground beef + breadcrumbs + egg + garlic<br>
+                    2. Brown meatballs in pan<br>
+                    3. Simmer in marinara 20 min<br>
+                    4. Toss with pasta + parmesan<br>
+                    <em>🧀 Aiden loves the meatballs!</em>
+                </div>
+
+                <div class="meal-item" onclick="toggleRecipe('fri')" style="cursor: pointer;">
+                    <div>
+                        <span class="day-label">Friday 🍕</span>
+                        <div style="font-size: 12px; color: #666;">Lunch: Quesadillas | Dinner: Pizza Night!</div>
+                    </div>
+                </div>
+                <div id="recipe-fri" class="recipe" style="display: none; padding: 10px; background: #f8f9fa; border-radius: 8px; margin: 5px 0; font-size: 13px;">
+                    <strong>Pizza Night:</strong><br>
+                    Option A: Homemade dough + sauce + toppings<br>
+                    Option B: Store-bought crust + customize<br>
+                    Option C: Order from local spot<br>
+                    <em>🎉 End of week = easy night!</em>
                 </div>
             </div>
         </div>
@@ -217,6 +268,16 @@
         // Load streak from localStorage
         const streak = localStorage.getItem('healthStreak') || '0';
         document.getElementById('streakNumber').textContent = streak;
+
+        // Toggle recipe display
+        function toggleRecipe(day) {
+            const recipe = document.getElementById('recipe-' + day);
+            if (recipe.style.display === 'none') {
+                recipe.style.display = 'block';
+            } else {
+                recipe.style.display = 'none';
+            }
+        }
 
         // Save note function
         function saveNote() {
