@@ -152,15 +152,33 @@
         </div>
 
         <div class="card">
-            <h2>📦 Amazon Deliveries</h2>
-            <div id="amazonStatus">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                    <div class="status-dot" style="background: #f39c12;"></div>
-                    <span>Loading packages...</span>
+            <h2>📅 Family Calendar</h2>
+            <div id="calendarList" style="font-size: 14px;">
+                <div class="meal-item" style="border-left: 4px solid #e74c3c; padding-left: 12px;">
+                    <div>
+                        <div class="day-label">Feb 10 (Mon)</div>
+                        <div>CHA School Visit — 9:00 AM</div>
+                    </div>
+                </div>
+                <div class="meal-item" style="border-left: 4px solid #3498db; padding-left: 12px;">
+                    <div>
+                        <div class="day-label">Feb 15-21</div>
+                        <div>🌴 Los Angeles Trip</div>
+                    </div>
+                </div>
+                <div class="meal-item" style="border-left: 4px solid #f39c12; padding-left: 12px;">
+                    <div>
+                        <div class="day-label">Feb 21-24</div>
+                        <div>🎢 San Diego Legoland</div>
+                    </div>
+                </div>
+                <div class="meal-item" style="border-left: 4px solid #9b59b6; padding-left: 12px;">
+                    <div>
+                        <div class="day-label">Feb 28 (Fri)</div>
+                        <div>SCDS School Visit — 9:00 AM</div>
+                    </div>
                 </div>
             </div>
-            <div id="packageList" style="font-size: 14px;"></div>
-            <button class="btn" onclick="window.open('http://' + window.location.hostname + ':8080', '_blank')" style="margin-top: 12px; font-size: 14px;">View Full Dashboard</button>
         </div>
 
         <div class="card">
@@ -199,77 +217,6 @@
         // Load streak from localStorage
         const streak = localStorage.getItem('healthStreak') || '0';
         document.getElementById('streakNumber').textContent = streak;
-
-        // Amazon Tracker Integration
-        async function loadAmazonPackages() {
-            try {
-                // Try to fetch from Amazon tracker API
-                const response = await fetch('http://localhost:8080/api/dashboard');
-                if (!response.ok) throw new Error('Tracker not running');
-                
-                const data = await response.json();
-                updateAmazonUI(data);
-            } catch (e) {
-                // Fallback: show link to start tracker
-                document.getElementById('amazonStatus').innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="status-dot" style="background: #95a5a6;"></div>
-                        <span>Tracker offline</span>
-                    </div>
-                    <p style="font-size: 13px; color: #666; margin-top: 8px;">
-                        Run: <code>python src/cli.py serve --port 8080</code>
-                    </p>
-                `;
-            }
-        }
-
-        function updateAmazonUI(data) {
-            const arrivingToday = data.packages?.arriving_today || [];
-            const pending = data.packages?.pending || [];
-            const delivered = data.packages?.recent_deliveries || [];
-            
-            let html = '';
-            
-            if (arrivingToday.length > 0) {
-                html += `<div style="background: #d4edda; padding: 10px; border-radius: 8px; margin-bottom: 10px;">`;
-                html += `<strong style="color: #155724;">🚚 Arriving Today (${arrivingToday.length})</strong><br>`;
-                arrivingToday.slice(0, 2).forEach(pkg => {
-                    html += `<span style="font-size: 13px;">• ${pkg.subject?.substring(0, 40) || 'Package'}...</span><br>`;
-                });
-                html += `</div>`;
-            }
-            
-            if (pending.length > 0) {
-                html += `<div style="margin-bottom: 10px;">`;
-                html += `<strong>In Transit (${pending.length})</strong><br>`;
-                pending.slice(0, 2).forEach(pkg => {
-                    html += `<span style="font-size: 13px; color: #666;">• ${pkg.subject?.substring(0, 35) || 'Order'}...</span><br>`;
-                });
-                html += `</div>`;
-            }
-            
-            if (delivered.length > 0) {
-                html += `<div style="color: #27ae60;">`;
-                html += `<strong>✓ Recently Delivered (${delivered.length})</strong>`;
-                html += `</div>`;
-            }
-            
-            document.getElementById('packageList').innerHTML = html || '<p style="color: #666;">No active packages</p>';
-            
-            // Update status dot
-            const statusColor = arrivingToday.length > 0 ? '#f39c12' : pending.length > 0 ? '#3498db' : '#95a5a6';
-            const statusText = arrivingToday.length > 0 ? `${arrivingToday.length} arriving today` : pending.length > 0 ? `${pending.length} in transit` : 'No active packages';
-            
-            document.getElementById('amazonStatus').innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="status-dot" style="background: ${statusColor};"></div>
-                    <span>${statusText}</span>
-                </div>
-            `;
-        }
-
-        // Load Amazon packages on page load
-        loadAmazonPackages();
 
         // Save note function
         function saveNote() {
