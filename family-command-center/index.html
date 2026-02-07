@@ -97,6 +97,70 @@
         .streak-label {
             color: #666;
         }
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .todo-item:last-child { border-bottom: none; }
+        .todo-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .todo-text {
+            flex: 1;
+            font-size: 14px;
+        }
+        .todo-text.done {
+            text-decoration: line-through;
+            color: #999;
+        }
+        .todo-delete {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 4px;
+        }
+        .note-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .note-author {
+            font-weight: 600;
+            color: #667eea;
+        }
+        .note-time {
+            color: #999;
+        }
+        .note-text {
+            font-size: 14px;
+            color: #333;
+        }
+        .note-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -232,10 +296,56 @@
             </div>
         </div>
 
+        <!-- Todos Section -->
         <div class="card">
-            <h2>📝 Quick Note</h2>
-            <textarea class="quick-note" id="quickNote" placeholder="What's on your mind?"></textarea>
-            <button class="btn" onclick="saveNote()">Save Note</button>
+            <h2>✅ To-Do List</h2>
+            
+            <!-- Groceries -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-weight: 600; color: #27ae60; margin-bottom: 8px;">🛒 Groceries</div>
+                <div id="todos-groceries" class="todo-list"></div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <input type="text" id="input-groceries" placeholder="Add item..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <button onclick="addTodo('groceries')" style="padding: 8px 16px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer;">Add</button>
+                </div>
+            </div>
+            
+            <!-- Amazon Returns -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-weight: 600; color: #e74c3c; margin-bottom: 8px;">📦 Amazon Returns</div>
+                <div id="todos-returns" class="todo-list"></div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <input type="text" id="input-returns" placeholder="Add return item..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <button onclick="addTodo('returns')" style="padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer;">Add</button>
+                </div>
+            </div>
+            
+            <!-- General Tasks -->
+            <div>
+                <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">📋 General</div>
+                <div id="todos-general" class="todo-list"></div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <input type="text" id="input-general" placeholder="Add task..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                    <button onclick="addTodo('general')" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div class="card">
+            <h2>💬 Notes for Each Other</h2>
+            <div id="notes-list" style="margin-bottom: 16px; max-height: 300px; overflow-y: auto;"></div>
+            
+            <div style="border-top: 1px solid #eee; padding-top: 16px;">
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <select id="note-author" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                        <option value="Zhia">From: Zhia</option>
+                        <option value="Aimee">From: Aimee</option>
+                    </select>
+                </div>
+                <textarea id="note-text" placeholder="Leave a note..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; min-height: 60px; resize: vertical; margin-bottom: 8px;"></textarea>
+                <button class="btn" onclick="addNote()">Send Note</button>
+            </div>
         </div>
     </div>
 
@@ -279,20 +389,180 @@
             }
         }
 
-        // Save note function
-        function saveNote() {
-            const note = document.getElementById('quickNote').value;
-            if (note.trim()) {
-                const notes = JSON.parse(localStorage.getItem('quickNotes') || '[]');
-                notes.push({
-                    text: note,
-                    date: new Date().toISOString()
+        // API Configuration
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8092' 
+            : 'http://' + window.location.hostname + ':8092';
+
+        // Todos API
+        async function loadTodos() {
+            try {
+                const response = await fetch(`${API_BASE}/api/todos`);
+                const todos = await response.json();
+                
+                // Clear lists
+                ['groceries', 'returns', 'general'].forEach(cat => {
+                    document.getElementById(`todos-${cat}`).innerHTML = '';
                 });
-                localStorage.setItem('quickNotes', JSON.stringify(notes));
-                document.getElementById('quickNote').value = '';
-                alert('Note saved!');
+                
+                // Populate lists
+                todos.forEach(todo => {
+                    renderTodo(todo);
+                });
+            } catch (e) {
+                console.error('Failed to load todos:', e);
             }
         }
+
+        function renderTodo(todo) {
+            const container = document.getElementById(`todos-${todo.category}`);
+            if (!container) return;
+            
+            const div = document.createElement('div');
+            div.className = 'todo-item';
+            div.innerHTML = `
+                <input type="checkbox" class="todo-checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo(${todo.id})">
+                <span class="todo-text ${todo.done ? 'done' : ''}">${escapeHtml(todo.text)}</span>
+                <button class="todo-delete" onclick="deleteTodo(${todo.id})">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        async function addTodo(category) {
+            const input = document.getElementById(`input-${category}`);
+            const text = input.value.trim();
+            if (!text) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/todos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, category })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    loadTodos();
+                }
+            } catch (e) {
+                console.error('Failed to add todo:', e);
+                alert('Failed to add item. Please try again.');
+            }
+        }
+
+        async function toggleTodo(id) {
+            try {
+                await fetch(`${API_BASE}/api/todos/${id}/toggle`, { method: 'POST' });
+                loadTodos();
+            } catch (e) {
+                console.error('Failed to toggle todo:', e);
+            }
+        }
+
+        async function deleteTodo(id) {
+            try {
+                await fetch(`${API_BASE}/api/todos/${id}`, { method: 'DELETE' });
+                loadTodos();
+            } catch (e) {
+                console.error('Failed to delete todo:', e);
+            }
+        }
+
+        // Notes API
+        async function loadNotes() {
+            try {
+                const response = await fetch(`${API_BASE}/api/notes`);
+                const notes = await response.json();
+                
+                const container = document.getElementById('notes-list');
+                container.innerHTML = '';
+                
+                notes.forEach(note => {
+                    renderNote(note);
+                });
+            } catch (e) {
+                console.error('Failed to load notes:', e);
+            }
+        }
+
+        function renderNote(note) {
+            const container = document.getElementById('notes-list');
+            
+            const div = document.createElement('div');
+            div.className = 'note-item';
+            const authorColor = note.author === 'Zhia' ? '#667eea' : '#e74c3c';
+            div.innerHTML = `
+                <div class="note-header">
+                    <span class="note-author" style="color: ${authorColor}">${escapeHtml(note.author)}</span>
+                    <span class="note-time">${formatTime(note.created_at)}</span>
+                </div>
+                <div class="note-text">${escapeHtml(note.text)}</div>
+                <button class="note-delete" onclick="deleteNote(${note.id})">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        async function addNote() {
+            const textInput = document.getElementById('note-text');
+            const authorSelect = document.getElementById('note-author');
+            const text = textInput.value.trim();
+            const author = authorSelect.value;
+            
+            if (!text) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/notes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, author })
+                });
+                
+                if (response.ok) {
+                    textInput.value = '';
+                    loadNotes();
+                }
+            } catch (e) {
+                console.error('Failed to add note:', e);
+                alert('Failed to send note. Please try again.');
+            }
+        }
+
+        async function deleteNote(id) {
+            try {
+                await fetch(`${API_BASE}/api/notes/${id}`, { method: 'DELETE' });
+                loadNotes();
+            } catch (e) {
+                console.error('Failed to delete note:', e);
+            }
+        }
+
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            const now = new Date();
+            const diff = (now - date) / 1000; // seconds
+            
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        // Initialize
+        loadTodos();
+        loadNotes();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadTodos();
+            loadNotes();
+        }, 30000);
     </script>
 </body>
 </html>
